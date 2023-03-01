@@ -28,7 +28,7 @@ export function handleInitialize(event: Initialize): void {
   pool.sqrtPrice = event.params.sqrtPriceX96
   pool.tick = BigInt.fromI32(event.params.tick)
   pool.save()
-  
+
   // update token prices
   let token0 = Token.load(pool.token0)
   let token1 = Token.load(pool.token1)
@@ -400,8 +400,25 @@ export function handleSwap(event: SwapEvent): void {
 
   // update fee growth
   let poolContract = PoolABI.bind(event.address)
-  let feeGrowthGlobal0X128 = poolContract.feeGrowthGlobal0X128()
-  let feeGrowthGlobal1X128 = poolContract.feeGrowthGlobal1X128()
+  let feeGrowthGlobal0X128 = poolContract.try_feeGrowthGlobal0X128()
+  let feeGrowthGlobal1X128 = poolContract.try_feeGrowthGlobal0X128()
+  if (!feeGrowthGlobal0X128 || !feeGrowthGlobal1X128) {
+    return
+  }
+
+  // JUST A COMMENT: COZ
+  // try_feeGrowthGlobal0X128(): ethereum.CallResult<BigInt> {
+  //   let result = super.tryCall(
+  //     "feeGrowthGlobal0X128",
+  //     "feeGrowthGlobal0X128():(uint256)",
+  //     []
+  //   );
+  //   if (result.reverted) {
+  //     return new ethereum.CallResult();
+  //   }
+  //   let value = result.value;
+  //   return ethereum.CallResult.fromValue(value[0].toBigInt());
+  // }
   pool.feeGrowthGlobal0X128 = feeGrowthGlobal0X128 as BigInt
   pool.feeGrowthGlobal1X128 = feeGrowthGlobal1X128 as BigInt
 
